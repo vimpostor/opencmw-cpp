@@ -1,7 +1,7 @@
 FetchContent_Declare(
         libsodium
         GIT_REPOSITORY https://github.com/jedisct1/libsodium.git
-        GIT_TAG 1.0.20
+        GIT_TAG 1.0.20-RELEASE
 )
 
 FetchContent_Declare(
@@ -42,5 +42,15 @@ add_library(mustache INTERFACE)
 target_include_directories(mustache INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/kainjow)
 add_library(mustache::mustache ALIAS mustache)
 
-FetchContent_MakeAvailable(cpp-httplib zeromq) # libsodium openssl kainjow-mustache
+FetchContent_MakeAvailable(cpp-httplib zeromq libsodium) # openssl kainjow-mustache
+
+file(GLOB_RECURSE LIBSODIUM_C "${libsodium_SOURCE_DIR}/src/*.c")
+file(GLOB_RECURSE LIBSODIUM_H "${libsodium_SOURCE_DIR}/src/*.h")
+add_library(libsodium ${LIBSODIUM_C} ${LIBSODIUM_H})
+set(SODIUM_LIBRARY_VERSION_MAJOR 28)
+set(SODIUM_LIBRARY_VERSION_MINOR 0)
+configure_file("${libsodium_SOURCE_DIR}/src/libsodium/include/sodium/version.h.in" "${libsodium_SOURCE_DIR}/src/libsodium/include/sodium/version.h")
+target_include_directories(libsodium PRIVATE "${libsodium_SOURCE_DIR}/src/libsodium/include/sodium")
+install(TARGETS libsodium EXPORT opencmwTargets)
+
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/contrib) # replace contrib by extras for catch2 v3.x.x
